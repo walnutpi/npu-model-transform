@@ -12,14 +12,20 @@ if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${DOCKER_IMAGE_
 fi
 
 run() {
-    # 如果附带参数-v，则代表要增加映射的文件夹
-    PATH_MOUNT=""
-    if [ "x$1" == "x-v" ]; then
+    # 如果附带参数 -docker_mount ，则代表要增加映射的文件夹
+    local command=""
+    local PATH_MOUNT=""
+    while [ "x$#" != "x0" ];
+    do
+        if [ "x$1" == "x-docker_mount" ]; then
+            shift
+            PATH_MOUNT="-v $1:$1"
+            shift
+        fi
+        command="$command $1"
         shift
-        PATH_MOUNT="-v $1:$1"
-        shift
-    fi
-    local command=$*
+    done
+    
     docker run --name "$CONTAINER_NAME" \
     --network host \
     ${PATH_MOUNT} \
