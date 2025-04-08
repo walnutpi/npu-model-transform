@@ -4,3 +4,4 @@
 *.json
 *.yml
 .tmp-*/
+*-data/
