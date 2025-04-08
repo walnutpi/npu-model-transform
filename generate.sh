@@ -43,4 +43,4 @@ cd $TMP_DIR
 generate_quantize $IMAGE_FILES_PATH $TMP_FILE_PREFIX
 
 echo "生成.nb模型文件"
-generate_nb_model $TMP_FILE_PREFIX "${ONNX_FILENAME_no_suffix}.nb"
+generate_nb_model $TMP_FILE_PREFIX "${ONNX_FILE_ABS_DIR}/${ONNX_FILENAME_no_suffix}.nb"

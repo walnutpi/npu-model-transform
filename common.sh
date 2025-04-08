@@ -118,4 +118,7 @@ generate_nb_model(){
     local tmp_dir="${TMP_FILE_PREFIX}_out"
     pegasus export ovxlib --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --dtype quantized --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --target-ide-project 'linux64' --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --postprocess-file ${TMP_FILE_PREFIX}_postprocess_file.yml --pack-nbg-unify --optimize ${NPU_VERSION} --viv-sdk ${VIV_SDK} --output-path "${tmp_dir}/model"
     cp "${tmp_dir}_nbg_unify/network_binary.nb" $OUTPU_FILENAME
+    echo ""
+    echo "output: $OUTPU_FILENAME"
+    echo ""
 }
