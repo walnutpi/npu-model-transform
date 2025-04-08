@@ -1,4 +1,6 @@
+*.nb
 *.onnx
 *.data
 *.json
 *.yml
+.tmp-*/
