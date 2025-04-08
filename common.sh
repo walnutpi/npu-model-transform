@@ -79,7 +79,8 @@ model = onnx.load('$ONNX_FILE_PATH')
 onnx.checker.check_model(model)
 input_names = [node.name for node in model.graph.input]
 output_names = [node.name for node in model.graph.output]
-print(json.dumps({'input_names': input_names, 'output_names': output_names}))
+input_shapes = [[dim.dim_value for dim in input_node.type.tensor_type.shape.dim] for input_node in model.graph.input]
+print(json.dumps({'input_names': input_names, 'output_names': output_names, 'input_shapes': input_shapes}))
     ")
     if [ -z "$INFO" ]; then
         echo "Failed to extract input/output names from the ONNX model."
@@ -87,14 +88,24 @@ print(json.dumps({'input_names': input_names, 'output_names': output_names}))
     fi
     local INPUT_NAMES=$(echo "$INFO" | jq -r '.input_names | join(" ")')
     local OUTPUT_NAMES=$(echo "$INFO" | jq -r '.output_names | join(" ")')
+    local INPUT_SHAPES=$(echo "$INFO" | jq -r '.input_shapes[0][1:] | join(",")')
+    
+    # 检查最后两个维度是否为0
+    local LAST_TWO_DIMS=$(echo "$INFO" | jq -r '.input_shapes[0][-2:] | join(",")')
+    if [ "$LAST_TWO_DIMS" == "0,0" ]; then
+        echo "请固定输入维度"
+        exit 1 
+    fi
+    
     if [ -z "$INPUT_NAMES" ] || [ -z "$OUTPUT_NAMES" ]; then
         echo "Failed to extract input/output names from the ONNX model."
         exit 1
     fi
     echo "inputs: $INPUT_NAMES"
     echo "outputs: $OUTPUT_NAMES"
+    echo "input shapes: $INPUT_SHAPES"
     
-    pegasus "import onnx --model ${ONNX_FILE_PATH} --output-model ${TMP_FILE_PREFIX}.json --output-data ${TMP_FILE_PREFIX}.data --inputs '${INPUT_NAMES}' --input-size-list '3,640,640' --outputs '${OUTPUT_NAMES}'"
+    pegasus "import onnx --model ${ONNX_FILE_PATH} --output-model ${TMP_FILE_PREFIX}.json --output-data ${TMP_FILE_PREFIX}.data --inputs '${INPUT_NAMES}' --input-size-list '$INPUT_SHAPES' --outputs '${OUTPUT_NAMES}'"
     pegasus generate inputmeta --model ${TMP_FILE_PREFIX}.json --separated-database --input-meta-output ${TMP_FILE_PREFIX}_inputmeta.yml
     pegasus generate postprocess-file --model ${TMP_FILE_PREFIX}.json --postprocess-file-output ${TMP_FILE_PREFIX}_postprocess_file.yml
 }
