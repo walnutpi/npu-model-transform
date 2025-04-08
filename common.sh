@@ -85,8 +85,8 @@ print(json.dumps({'input_names': input_names, 'output_names': output_names}))
         echo "Failed to extract input/output names from the ONNX model."
         exit 1
     fi
-    local INPUT_NAMES=$(echo "$INFO" | jq -r '.input_names | join(",")')
-    local OUTPUT_NAMES=$(echo "$INFO" | jq -r '.output_names | join(",")')
+    local INPUT_NAMES=$(echo "$INFO" | jq -r '.input_names | join(" ")')
+    local OUTPUT_NAMES=$(echo "$INFO" | jq -r '.output_names | join(" ")')
     if [ -z "$INPUT_NAMES" ] || [ -z "$OUTPUT_NAMES" ]; then
         echo "Failed to extract input/output names from the ONNX model."
         exit 1
@@ -94,7 +94,7 @@ print(json.dumps({'input_names': input_names, 'output_names': output_names}))
     echo "inputs: $INPUT_NAMES"
     echo "outputs: $OUTPUT_NAMES"
     
-    pegasus import onnx --model ${ONNX_FILE_PATH} --output-model ${TMP_FILE_PREFIX}.json --output-data ${TMP_FILE_PREFIX}.data --inputs ${INPUT_NAMES} --input-size-list '3,640,640' --outputs ${OUTPUT_NAMES}
+    pegasus "import onnx --model ${ONNX_FILE_PATH} --output-model ${TMP_FILE_PREFIX}.json --output-data ${TMP_FILE_PREFIX}.data --inputs '${INPUT_NAMES}' --input-size-list '3,640,640' --outputs '${OUTPUT_NAMES}'"
     pegasus generate inputmeta --model ${TMP_FILE_PREFIX}.json --separated-database --input-meta-output ${TMP_FILE_PREFIX}_inputmeta.yml
     pegasus generate postprocess-file --model ${TMP_FILE_PREFIX}.json --postprocess-file-output ${TMP_FILE_PREFIX}_postprocess_file.yml
 }
