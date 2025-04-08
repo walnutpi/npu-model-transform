@@ -3,6 +3,7 @@
 
 DOCKER_IMAGE_NAME="ubuntu-npu"
 DOCKER_IMAGE_VER="v1.8.11"
+NPU_VERSION="VIP9000NANOSI_PLUS_PID0X10000016"
 CONTAINER_NAME="${DOCKER_IMAGE_NAME}-$(date +%s)"
 PATH_MOUNT=""
 
@@ -20,7 +21,6 @@ docker_add_mount(){
         exit 1
     fi
     PATH_MOUNT="$PATH_MOUNT -v $path_to_mount:$path_to_mount"
-    
 }
 
 docker_run_bash() {
@@ -116,6 +116,6 @@ generate_nb_model(){
     local OUTPU_FILENAME=$2
     local VIV_SDK="/root/Vivante_IDE/VivanteIDE5.8.2/cmdtools"
     local tmp_dir="${TMP_FILE_PREFIX}_out"
-    pegasus export ovxlib --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --dtype quantized --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --target-ide-project 'linux64' --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --postprocess-file ${TMP_FILE_PREFIX}_postprocess_file.yml --pack-nbg-unify --optimize VIP9000NANOSI_PLUS_PID0X10000016 --viv-sdk ${VIV_SDK} --output-path "${tmp_dir}/model"
+    pegasus export ovxlib --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --dtype quantized --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --target-ide-project 'linux64' --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --postprocess-file ${TMP_FILE_PREFIX}_postprocess_file.yml --pack-nbg-unify --optimize ${NPU_VERSION} --viv-sdk ${VIV_SDK} --output-path "${tmp_dir}/model"
     cp "${tmp_dir}_nbg_unify/network_binary.nb" $OUTPU_FILENAME
 }
