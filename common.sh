@@ -37,6 +37,18 @@ docker_run_bash() {
     -it --rm "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VER" /bin/bash -c "$command"
 }
 
+docker_enter(){
+    docker run --name "$CONTAINER_NAME" \
+    --network host \
+    ${PATH_MOUNT} \
+    -v /etc/hosts:/etc/hosts:ro \
+    -v /etc/resolv.conf:/etc/resolv.conf:ro \
+    -v /etc/localtime:/etc/localtime:ro \
+    -v "$(pwd):$(pwd)" \
+    -w "$(pwd)" \
+    -it --rm "$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VER" /bin/bash 
+}
+
 docker_run_python3() {
     local command=$@
     docker run --name "$CONTAINER_NAME" \
@@ -63,7 +75,7 @@ docker_run_python3() {
 # export VIV_VX_ENABLE_GRAPH_TRANSFORM=-bn2dwconv:2
 # #export VIV_VX_ENABLE_GRAPH_TRANSFORM=-Dump-bn2dwconv:2
 pegasus() {
-    docker_run_bash python3 /root/acuity-toolkit-whl-6.21.16/bin/pegasus.py $*
+    docker_run_bash python3 /root/acuity-toolkit-whl-6.21.16/bin/pegasus.py $@
 }
 
 generate_model_data(){

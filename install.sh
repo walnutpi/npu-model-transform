@@ -13,3 +13,4 @@ creat_lnk() {
 creat_lnk /usr/bin/npu-model-export  npu-model-export.sh 
 creat_lnk /usr/bin/npu-model-quantize  npu-model-quantize.sh 
 creat_lnk /usr/bin/npu-model-generate  npu-model-generate.sh 
+creat_lnk /usr/bin/npu-tool  npu-tool.sh
