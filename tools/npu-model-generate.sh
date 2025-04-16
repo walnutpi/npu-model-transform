@@ -1,19 +1,23 @@
 #!/bin/bash
-PATH_SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source $PATH_SCRIPT_DIR/common.sh $@
 
 DATA_PATH=$1
 IMAGE_FILES_PATH=$2
 
 if [ -z "$DATA_PATH" ]; then
-    echo -e "\t npu-model-quantize <model data path> <image-files-path>"
-    echo -e "\t <model data path> : 指定一个存放了模型导出文件的路径"
-    echo -e "\t <image-files-path> : 指定一个存放了测试图片的路径"
-    echo -e "\t 对模型进行量化，并生成结果到 <model data path> 路径下"
+    echo ""
+    echo -e "npu-model-generate <export data path> <image-files-path>"
+    echo -e "  <export data path> : 指定一个存放了 npu-model-export命令 导出数据的路径"
+    echo -e "  <image-files-path> : 指定一个存放了测试图片的路径"
+    echo -e "对模型进行量化,生成.nb模型文件存放到 <export data path> 路径下"
+        
+    echo ""
+    echo -e "example:\n  npu-model-generate yolov5s-data/ images/"
+    echo ""
     exit 1
 fi
 
-
+PATH_SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+source $PATH_SCRIPT_DIR/common.sh $@
 
 # 在DATA_PATH路径下查找后缀名为.onnx的第一个文件
 ONNX_FILE_PATH=""
@@ -44,6 +48,9 @@ if [ "${ONNX_FILE_ABS_PATH%/*}" != "$(pwd)" ]; then
 fi
 set -e
 
+echo "开始量化"
 cd $DATA_PATH
 generate_quantize $IMAGE_FILES_PATH $ONNX_FILE_ABS_PATH_no_suffix
 
+echo "生成.nb模型文件"
+generate_nb_model $ONNX_FILE_ABS_PATH_no_suffix "${ONNX_FILE_ABS_PATH_no_suffix}.nb"

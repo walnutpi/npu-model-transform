@@ -7,6 +7,12 @@ NPU_VERSION="VIP9000NANOSI_PLUS_PID0X10000016"
 CONTAINER_NAME="${DOCKER_IMAGE_NAME}-$(date +%s)"
 PATH_MOUNT=""
 
+# 如果当前不是以root权限运行，则切换到root权限
+if [ "$EUID" -ne 0 ]; then
+    echo "请以root权限运行"
+    exit 1
+fi
+
 
 if docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${DOCKER_IMAGE_NAME}$"; then
     echo "docker 镜像 '$DOCKER_IMAGE_NAME' 不存在"

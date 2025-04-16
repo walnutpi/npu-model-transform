@@ -1,16 +1,25 @@
 #!/bin/bash
-PATH_SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source $PATH_SCRIPT_DIR/common.sh $@
 
 ONNX_FILE_PATH=$1
 
 if [ -z "$ONNX_FILE_PATH" ]; then
-    echo -e "\t npu-model-export <XXX.onnx>"
-    echo -e "example:  npu-model-export ./yolov5s.onnx"
-    echo -e "\t 导出指定onnx模型内的数据，会在模型路径下生成一个 xxx-data 文件夹进行存放"
+    echo ""
+    echo -e "npu-model-export <XXX.onnx>"
+    echo -e "  <XXX.onnx> : 指定一个onnx文件路径"
+    echo -e "导出指定<XXX.onnx>模型文件内的数据，会在模型路径下生成一个 xxx-data 文件夹,存放如下数据"
+    echo -e "    - XXX.json 网络结构文件"
+    echo -e "    - XXX.data 网络权重文件"
+    echo -e "    - XXX_inputmeta.yml 输入描述文件"
+    echo -e "    - XXX_postprocess_file.yml 输出描述文件"
+    
+    echo ""
+    echo -e "example:\n  npu-model-export ./yolov5s.onnx"
     echo ""
     exit 1
 fi
+
+PATH_SCRIPT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+source $PATH_SCRIPT_DIR/common.sh $@
 
 if [ ! -f "$ONNX_FILE_PATH" ]; then
     echo "请传入一个.onnx文件"

@@ -10,7 +10,6 @@ creat_lnk() {
     ln -s ${PATH_PWD}/$link_file_name ${link_path}
 }
 
-creat_lnk /usr/bin/npu-model-export  npu-model-export.sh 
-creat_lnk /usr/bin/npu-model-quantize  npu-model-quantize.sh 
-creat_lnk /usr/bin/npu-model-generate  npu-model-generate.sh 
-creat_lnk /usr/bin/npu-tool  npu-tool.sh
+creat_lnk /usr/bin/npu-model-export  tools/npu-model-export.sh 
+creat_lnk /usr/bin/npu-model-generate  tools/npu-model-generate.sh 
+creat_lnk /usr/bin/npu-tool  tools/npu-tool.sh
