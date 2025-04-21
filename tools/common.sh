@@ -81,52 +81,10 @@ docker_run_python3() {
 # export VIV_VX_ENABLE_GRAPH_TRANSFORM=-bn2dwconv:2
 # #export VIV_VX_ENABLE_GRAPH_TRANSFORM=-Dump-bn2dwconv:2
 pegasus() {
+    echo "$@"
     docker_run_bash python3 /root/acuity-toolkit-whl-6.21.16/bin/pegasus.py $@
 }
 
-generate_model_data(){
-    local ONNX_FILE_PATH=$1
-    local TMP_FILE_PREFIX=$2
-    
-    # 获取输入输出节点的name属性值
-    local INFO=$(docker_run_python3 "
-import onnx
-import json
-import sys
-model = onnx.load('$ONNX_FILE_PATH')
-onnx.checker.check_model(model)
-input_names = [node.name for node in model.graph.input]
-output_names = [node.name for node in model.graph.output]
-input_shapes = [[dim.dim_value for dim in input_node.type.tensor_type.shape.dim] for input_node in model.graph.input]
-print(json.dumps({'input_names': input_names, 'output_names': output_names, 'input_shapes': input_shapes}))
-    ")
-    if [ -z "$INFO" ]; then
-        echo "Failed to extract input/output names from the ONNX model."
-        exit 1
-    fi
-    local INPUT_NAMES=$(echo "$INFO" | jq -r '.input_names | join(" ")')
-    local OUTPUT_NAMES=$(echo "$INFO" | jq -r '.output_names | join(" ")')
-    local INPUT_SHAPES=$(echo "$INFO" | jq -r '.input_shapes[0][1:] | join(",")')
-    
-    # 检查最后两个维度是否为0
-    local LAST_TWO_DIMS=$(echo "$INFO" | jq -r '.input_shapes[0][-2:] | join(",")')
-    if [ "$LAST_TWO_DIMS" == "0,0" ]; then
-        echo "请固定输入维度"
-        exit 1 
-    fi
-    
-    if [ -z "$INPUT_NAMES" ] || [ -z "$OUTPUT_NAMES" ]; then
-        echo "Failed to extract input/output names from the ONNX model."
-        exit 1
-    fi
-    echo "inputs: $INPUT_NAMES"
-    echo "outputs: $OUTPUT_NAMES"
-    echo "input shapes: $INPUT_SHAPES"
-    
-    pegasus "import onnx --model ${ONNX_FILE_PATH} --output-model ${TMP_FILE_PREFIX}.json --output-data ${TMP_FILE_PREFIX}.data --inputs '${INPUT_NAMES}' --input-size-list '$INPUT_SHAPES' --outputs '${OUTPUT_NAMES}'"
-    pegasus generate inputmeta --model ${TMP_FILE_PREFIX}.json --separated-database --input-meta-output ${TMP_FILE_PREFIX}_inputmeta.yml
-    pegasus generate postprocess-file --model ${TMP_FILE_PREFIX}.json --postprocess-file-output ${TMP_FILE_PREFIX}_postprocess_file.yml
-}
 generate_quantize(){
     local IMAGE_FILES_PATH=$1
     local TMP_FILE_PREFIX=$2
