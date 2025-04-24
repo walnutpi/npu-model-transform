@@ -2,6 +2,7 @@
 
 MODEL_FILE_PATH=$1
 IMAGE_FILES_PATH=$2
+PWD_PATH=$(pwd)
 if [ ! -f "$MODEL_FILE_PATH" ]; then
     echo "缺少模型文件"
     exit 1
@@ -34,5 +35,5 @@ source npu-model-export $MODEL_FILE_PATH
 inputmeta_file=$TMP_FILE_PREFIX"_inputmeta.yml"
 sed -i '/scale:/,/preproc_node_params:/s/- 1.0/- 0.0039/g' "$inputmeta_file"
 
-cd $PWD
+cd $PWD_PATH
 npu-model-generate $TMP_DIR $IMAGE_FILES_PATH

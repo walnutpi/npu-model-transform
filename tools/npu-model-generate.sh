@@ -2,7 +2,8 @@
 
 DATA_PATH=$1
 IMAGE_FILES_PATH=$2
-
+PWD_PATH=$(pwd)
+echo "PWD_PATH=$PWD_PATH"
 if [ -z "$DATA_PATH" ]; then
     echo ""
     echo -e "npu-model-generate <export data path> <image-files-path>"
@@ -23,10 +24,11 @@ source $PATH_SCRIPT_DIR/common.sh $@
 MODEL_FILE_PATH=""
 MODEL_SUFFIX=("onnx" "tflite")
 # 遍历DATA_PATH路径下的所有文件，查找后缀名为MMODEL_SUFFIX内容的第一个文件
-
+MODEL_FILENAME=""
 for SUFFIX in ${MODEL_SUFFIX[@]}; do
     for file in $(find $DATA_PATH -name "*.${SUFFIX}"); do
         if [ -f "$file" ]; then
+            MODEL_FILENAME=$(basename "$file")
             MODEL_FILE_PATH=$file
             break
         fi
@@ -54,6 +56,32 @@ ONNX_FILE_ABS_PATH_no_suffix=${ONNX_FILE_ABS_PATH%.*}
 if [ "${ONNX_FILE_ABS_PATH%/*}" != "$(pwd)" ]; then
     docker_add_mount "$(dirname $ONNX_FILE_ABS_PATH)"
 fi
+
+generate_quantize() {
+    local IMAGE_FILES_PATH=$1
+    local TMP_FILE_PREFIX=$2
+    local dataset_path="$(dirname $TMP_FILE_PREFIX)/dataset.txt"
+    if [ ! -d "$IMAGE_FILES_PATH" ]; then
+        echo "路径不存在：$IMAGE_FILES_PATH"
+        exit 1
+    fi
+    docker_add_mount "$(dirname $IMAGE_FILES_PATH)"
+    find ${IMAGE_FILES_PATH}/* >${dataset_path}
+    pegasus quantize --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --device CPU --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --compute-entropy --rebuild --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --quantizer asymmetric_affine --qtype uint8
+}
+
+generate_nb_model() {
+    local TMP_FILE_PREFIX=$1
+    local OUTPU_FILENAME=$2
+    local VIV_SDK="/root/Vivante_IDE/VivanteIDE5.8.2/cmdtools"
+    local tmp_dir="${TMP_FILE_PREFIX}_out"
+    pegasus export ovxlib --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --dtype quantized --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --target-ide-project 'linux64' --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --postprocess-file ${TMP_FILE_PREFIX}_postprocess_file.yml --pack-nbg-unify --optimize ${NPU_VERSION} --viv-sdk ${VIV_SDK} --output-path "${tmp_dir}/model"
+    cp "${tmp_dir}_nbg_unify/network_binary.nb" $OUTPU_FILENAME
+    echo ""
+    echo "output: $OUTPU_FILENAME"
+    echo ""
+}
+
 set -e
 
 echo "开始量化"
@@ -61,4 +89,5 @@ cd $DATA_PATH
 generate_quantize $IMAGE_FILES_PATH $ONNX_FILE_ABS_PATH_no_suffix
 
 echo "生成.nb模型文件"
-generate_nb_model $ONNX_FILE_ABS_PATH_no_suffix "${ONNX_FILE_ABS_PATH_no_suffix}.nb"
+PATH_OUT_FILE_NAME=$(realpath "${PWD_PATH}/${MODEL_FILENAME%.onnx}.nb")
+generate_nb_model $ONNX_FILE_ABS_PATH_no_suffix $PATH_OUT_FILE_NAME

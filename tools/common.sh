@@ -82,28 +82,3 @@ pegasus() {
     echo "$@"
     docker_run_bash python3 /root/acuity-toolkit-whl-6.21.16/bin/pegasus.py $@
 }
-
-generate_quantize() {
-    local IMAGE_FILES_PATH=$1
-    local TMP_FILE_PREFIX=$2
-    local dataset_path="$(dirname $TMP_FILE_PREFIX)/dataset.txt"
-    if [ ! -d "$IMAGE_FILES_PATH" ]; then
-        echo "路径不存在：$IMAGE_FILES_PATH"
-        exit 1
-    fi
-    docker_add_mount "$(dirname $IMAGE_FILES_PATH)"
-    find ${IMAGE_FILES_PATH}/* >${dataset_path}
-    pegasus quantize --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --device CPU --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --compute-entropy --rebuild --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --quantizer asymmetric_affine --qtype uint8
-}
-
-generate_nb_model() {
-    local TMP_FILE_PREFIX=$1
-    local OUTPU_FILENAME=$2
-    local VIV_SDK="/root/Vivante_IDE/VivanteIDE5.8.2/cmdtools"
-    local tmp_dir="${TMP_FILE_PREFIX}_out"
-    pegasus export ovxlib --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --dtype quantized --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --target-ide-project 'linux64' --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --postprocess-file ${TMP_FILE_PREFIX}_postprocess_file.yml --pack-nbg-unify --optimize ${NPU_VERSION} --viv-sdk ${VIV_SDK} --output-path "${tmp_dir}/model"
-    cp "${tmp_dir}_nbg_unify/network_binary.nb" $OUTPU_FILENAME
-    echo ""
-    echo "output: $OUTPU_FILENAME"
-    echo ""
-}
