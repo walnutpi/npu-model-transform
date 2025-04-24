@@ -36,7 +36,7 @@ onnx.checker.check_model(model)
 input_names = [node.name for node in model.graph.input]
 output_names = [node.name for node in model.graph.output]
 input_shapes = [[dim.dim_value for dim in input_node.type.tensor_type.shape.dim] for input_node in model.graph.input]
-print(json.dumps({'input_names': input_names, 'output_names': output_names, 'input_shapes': input_shapes}))
+print(json.dumps({'input_names': [input_names[0]], 'output_names': output_names, 'input_shapes': [input_shapes[0]]}))
     ")
     if [ -z "$INFO" ]; then
         echo "Failed to extract input/output names from the MODEL model."
