@@ -27,7 +27,7 @@ generate_model_data_onnx() {
     echo "正在导出模型数据"
     echo "MODEL_FILE_PATH= $MODEL_FILE_PATH"
     # 获取输入输出节点的name属性值
-    local INFO=$(docker_run_python3 "
+    local INFO=$(python3 -c "
 import onnx
 import json
 import sys
