@@ -6,8 +6,8 @@
 sudo ./install.sh
 ```
 
+## npu-transfer-yolo
+yolo格式专用的快捷指令
+1. 启用npu自带的前处理对输入数据自动转为浮点数
+2. 设置为uint8量化
 
-**npu-model-export** 导出指定onnx模型内的数据
-**npu-model-quantize** 对onnx导出的模型进行uint8量化
-**npu-model-generate** 将量化数据转为可用于npu的.nb格式文件
-**npu-tool** 在当前路径打开npu工具的docker容器
