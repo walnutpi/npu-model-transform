@@ -66,7 +66,7 @@ generate_quantize() {
         exit 1
     fi
     docker_add_mount "$(dirname $IMAGE_FILES_PATH)"
-    find ${IMAGE_FILES_PATH}/* >${dataset_path}
+    find ${IMAGE_FILES_PATH}/* -type f >${dataset_path}
     pegasus quantize --model ${TMP_FILE_PREFIX}.json --model-data ${TMP_FILE_PREFIX}.data --device CPU --with-input-meta ${TMP_FILE_PREFIX}_inputmeta.yml --compute-entropy --rebuild --model-quantize ${TMP_FILE_PREFIX}_uint8.quantize --quantizer asymmetric_affine --qtype uint8
 }
 
